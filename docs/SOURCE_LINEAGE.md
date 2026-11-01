@@ -40,3 +40,8 @@
 | `tests/test_pixel_matrix.c` | `314d9e8335b30f1f6ff712c26dd05d654756f7ea` |
 | `tests/test_rafascan_network.sh` | `8433bc28b2da70e559617d76d32cfb727bae69e7` |
 | `tools/rafascan_network.sh` | `64cfc3badee29a310ae4c781a07e56c2488a86cd` |
+
+
+## Destination-only build integration
+
+The root `Makefile`, `.gitignore`, README, this lineage file, and `.github/workflows/makefile-smoke.yml` were authored for RAFBROWSER. The two imported upstream workflows and the 30 imported code/test/tool/license files remain byte-for-byte copies of the pinned source snapshot. The additional workflow validates `make` and the static ELF boundary.
