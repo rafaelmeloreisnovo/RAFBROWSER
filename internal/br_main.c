@@ -12,9 +12,18 @@
 #include "br_html.h"
 #include "br_dns.h"
 #include "br_links.h"
+#include "br_license.h"
+#include "../browser/br_resource.h"
+#include "../settings/br_settings_runtime.h"
 /* Explicit per-process endpoint override; no external resolver is consulted. */
 static u8 _BR_FORCED_IP[4];
 static u8 _BR_FORCED_IP_SET=0u;
+static BRSettings _BR_SETTINGS;
+static u32 BR_HTTP_MIME_KIND(const u8*buf,u32 n){
+    const u8*v=HTTP_FIND_HEADER(buf,n,"Content-Type");if(!v)return BR_RES_HTML;
+    u32 i=0;while(v[i]&&v[i]!='\r'&&v[i]!='\n'&&v[i]!=';'&&v[i]!=' '&&v[i]!='\t')i++;
+    return(u32)BR_RESOURCE_CLASSIFY((const char*)v,i);
+}
 #ifndef AT_FDCWD
 #define AT_FDCWD (-100)
 #endif
@@ -155,8 +164,8 @@ static s32 DO_FETCH_R(BCtx*ctx,u32 redirects){
             PS("  [RETRY CONNECT socket fail]\n");
             continue;
         }
-        if(SET_RECV_TIMEOUT(ctx->fd,(usize)3u)!=0||
-           SET_SEND_TIMEOUT(ctx->fd,(usize)3u)!=0){
+        if(SET_RECV_TIMEOUT(ctx->fd,(usize)_BR_SETTINGS.timeout_seconds)!=0||
+           SET_SEND_TIMEOUT(ctx->fd,(usize)_BR_SETTINGS.timeout_seconds)!=0){
             FF_SET(ctx->flags,FL_ERROR);
             STATUS(ctx->flags,"TCP falhou (SO_RCVTIMEO/SO_SNDTIMEO)");
             goto done;
@@ -211,7 +220,8 @@ static s32 DO_FETCH_R(BCtx*ctx,u32 redirects){
     u32 total=0;
     /* Acumula response em _NB */
     {
-        u32 max=NET_BUF-1u;
+        u32 max=_BR_SETTINGS.max_response_bytes;
+        if(max>=NET_BUF)max=NET_BUF-1u;
         u8 eof=0u,io_error=0u,framed_complete=0u;
         while(total<max){
             s32 r=RECV(ctx->fd,(void*)(_NB+total),max-total);
@@ -324,6 +334,13 @@ static s32 DO_FETCH_R(BCtx*ctx,u32 redirects){
         goto done;
     }
     u32 body_len=total-body_off;
+    BRResourceKind resource=(BRResourceKind)BR_HTTP_MIME_KIND(_NB,total);
+    BRResourceRoute route=BR_RESOURCE_ROUTE(resource);
+    if(route!=BR_ROUTE_RENDER_TEXT){
+        FF_SET(ctx->flags,FL_ERROR);
+        STATUS(ctx->flags,"Recurso classificado, mas sem renderizador neste build");
+        goto done;
+    }
     s32 mime=HTTP_CONTENT_TYPE(_NB,body_off);
     if(mime<0){
         FF_SET(ctx->flags,FL_ERROR);
@@ -442,11 +459,16 @@ void browser_main(void){
     /* Bounded cmdline: reject unknown, duplicate and truncated options.
      * --connect-ip=IP pins an endpoint without contacting DNS. It does NOT
      * authenticate HTTP; HTTPS remains disabled before any network I/O. */
-    u8 interactive=0u,bad_option=0u;
+    u8 interactive_flag=0u,interactive_seen=0u,bad_option=0u;
     {u32 ci=0u;
      while(ci<511u&&_CMD[ci])ci++;
      if(ci>=511u)bad_option=1u;
      else if(++ci<511u&&_CMD[ci]){
+         u32 first_end=ci;while(first_end<511u&&_CMD[first_end])first_end++;
+         if(first_end-ci==9u&&BR_MEMCMP(_CMD+ci,"--license",9u)==0){
+             if(BR_LICENSE_SHOW()!=0)PS("[ERRO] nao foi possivel ler LICENSE.md\n");
+             EX();
+         }
          url=(const char*)(_CMD+ci);
          while(ci<511u&&_CMD[ci])ci++;
          if(ci>=511u)bad_option=1u;
@@ -458,8 +480,9 @@ void browser_main(void){
                  while(ci+al<511u&&_CMD[ci+al])al++;
                  if(ci+al>=511u){bad_option=1u;break;}
                  if(al==13u&&BR_MEMCMP(arg,"--interactive",13u)==0){
-                     if(interactive)bad_option=1u;
-                     interactive=1u;
+                     if(interactive_seen)bad_option=1u;
+                     interactive_seen=1u;
+                     interactive_flag=1u;
                  }else if(al>13u&&BR_MEMCMP(arg,"--connect-ip=",13u)==0){
                      if(_BR_FORCED_IP_SET||PARSE_IP(arg+13u,_BR_FORCED_IP)!=0)
                          bad_option=1u;
@@ -469,6 +492,10 @@ void browser_main(void){
              }
          }
      }}
+    s32 cfg=BR_SETTINGS_LOAD("browser.conf",&_BR_SETTINGS);
+    if(cfg<0){PS("[ERRO] browser.conf invalido ou excessivo\n");EX();}
+    if(cfg==1)PS("[CONFIG] browser.conf ausente; usando padroes fixos\n");
+    u8 interactive=(u8)(interactive_seen?interactive_flag:_BR_SETTINGS.interactive);
     if(bad_option||(_BR_FORCED_IP_SET&&interactive)){
         PS("[ERRO] opcao invalida ou --connect-ip com --interactive\n");
         EX();

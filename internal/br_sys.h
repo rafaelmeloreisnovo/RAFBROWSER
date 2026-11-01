@@ -41,6 +41,7 @@ AI s32 SETSOCKOPT(s32 fd,s32 lvl,s32 opt,const void*v,u32 n){return _sc6(294u,(u
 AI u64 NS(void){TS32 t={0,0};_sc2(263u,CLOCK_MONO,(u32)(usize)&t);return(u64)(u32)t.s*1000000000ULL+(u64)(u32)t.n;}
 AI s32 WR(u32 f,const void*b,u32 n){return _sc3(4u,f,(u32)(usize)b,n);}
 AI s32 BR_READ(u32 f,void*b,u32 n){return _sc3(3u,f,(u32)(usize)b,n);}
+AI s32 BR_OPEN_RO(const char*p){return _sc3(5u,(u32)(usize)p,0u,0u);}
 NR void EX(void){_sc1(248u,0u);__builtin_unreachable();}
 
 #elif defined(__aarch64__)
@@ -65,6 +66,7 @@ AI s32 SETSOCKOPT(s32 fd,s32 lvl,s32 opt,const void*v,u32 n){return(s32)_sc6(208
 AI u64 NS(void){TS64 t={0,0};_sc2(113u,CLOCK_MONO,(u64)(usize)&t);return(u64)t.s*1000000000ULL+(u64)t.n;}
 AI s32 WR(u32 f,const void*b,u32 n){return(s32)_sc3(64u,(u64)f,(u64)(usize)b,(u64)n);}
 AI s32 BR_READ(u32 f,void*b,u32 n){return(s32)_sc3(63u,(u64)f,(u64)(usize)b,(u64)n);}
+AI s32 BR_OPEN_RO(const char*p){return(s32)_sc3(56u,(u64)(s64)-100,(u64)(usize)p,0u);}
 NR void EX(void){_sc1(94u,0u);__builtin_unreachable();}
 
 #elif defined(__x86_64__)
@@ -86,6 +88,7 @@ AI s32 SETSOCKOPT(s32 fd,s32 lvl,s32 opt,const void*v,u32 n){return(s32)_sc6(54u
 AI u64 NS(void){TS64 t={0,0};_sc2(228u,CLOCK_MONO,(u64)(usize)&t);return(u64)t.s*1000000000ULL+(u64)t.n;}
 AI s32 WR(u32 f,const void*b,u32 n){return(s32)_sc3(1u,(u64)f,(u64)(usize)b,(u64)n);}
 AI s32 BR_READ(u32 f,void*b,u32 n){return(s32)_sc3(0u,(u64)f,(u64)(usize)b,(u64)n);}
+AI s32 BR_OPEN_RO(const char*p){return(s32)_sc3(257u,(u64)(s64)-100,(u64)(usize)p,0u);}
 NR void EX(void){_sc1(231u,0u);__builtin_unreachable();}
 #endif
 
