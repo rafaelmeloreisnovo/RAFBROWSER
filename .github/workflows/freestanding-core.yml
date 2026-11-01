@@ -1,0 +1,42 @@
+name: Freestanding core smoke
+on:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  host-elf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh tests/check_host_freestanding.sh
+  cross-abi-objects:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh tests/check_cross_abi_objects.sh
+  negative-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh tests/check_negative_fixtures.sh
+  arm-emulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU user-mode (CI-only, not shipped)
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq qemu-user
+      - name: Execute ARM32 and ARM64 Linux-syscall ELF emulation
+        run: sh tests/check_qemu_abis.sh
+
+  pixel-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify freestanding RGB/CMYK/PB and ARM32/ARM64 linker boundaries
+        run: sh tests/check_pixel_matrix.sh
