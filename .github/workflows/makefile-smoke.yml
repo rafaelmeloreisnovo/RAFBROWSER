@@ -1,0 +1,36 @@
+name: RAFBROWSER Makefile build
+on:
+  pull_request:
+    paths:
+      - 'Makefile'
+      - 'internal/**'
+      - '.github/workflows/makefile-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'Makefile'
+      - 'internal/**'
+      - '.github/workflows/makefile-smoke.yml'
+permissions:
+  contents: read
+jobs:
+  make-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build through the repository entrypoint
+        run: make clean && make
+      - name: Verify static no-libc ELF boundary
+        shell: bash
+        run: |
+          readelf -h build/browserraf | grep -q 'Machine:.*Advanced Micro Devices X86-64'
+          if readelf -l build/browserraf | grep -q INTERP; then
+            echo FAIL_INTERPRETER
+            exit 1
+          fi
+          if readelf -d build/browserraf 2>/dev/null | grep -q NEEDED; then
+            echo FAIL_NEEDED_LIBRARY
+            exit 1
+          fi
+          echo PASS_MAKEFILE_STATIC_X86_64
