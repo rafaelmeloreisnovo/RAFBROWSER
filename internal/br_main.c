@@ -12,6 +12,7 @@
 #include "br_html.h"
 #include "br_dns.h"
 #include "br_links.h"
+#include "br_license.h"
 /* Explicit per-process endpoint override; no external resolver is consulted. */
 static u8 _BR_FORCED_IP[4];
 static u8 _BR_FORCED_IP_SET=0u;
@@ -447,6 +448,11 @@ void browser_main(void){
      while(ci<511u&&_CMD[ci])ci++;
      if(ci>=511u)bad_option=1u;
      else if(++ci<511u&&_CMD[ci]){
+         u32 first_end=ci;while(first_end<511u&&_CMD[first_end])first_end++;
+         if(first_end-ci==9u&&BR_MEMCMP(_CMD+ci,"--license",9u)==0){
+             if(BR_LICENSE_SHOW()!=0)PS("[ERRO] nao foi possivel ler LICENSE.md\n");
+             EX();
+         }
          url=(const char*)(_CMD+ci);
          while(ci<511u&&_CMD[ci])ci++;
          if(ci>=511u)bad_option=1u;

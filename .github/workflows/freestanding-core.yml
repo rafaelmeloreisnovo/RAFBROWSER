@@ -23,6 +23,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: sh tests/check_negative_fixtures.sh
+      - name: Bounded settings, resource, network, and update paths
+        run: make test-browser-paths
   arm-emulation:
     runs-on: ubuntu-latest
     timeout-minutes: 15
