@@ -1,0 +1,4 @@
+/build/
+/browserraf
+*.o
+*.elf

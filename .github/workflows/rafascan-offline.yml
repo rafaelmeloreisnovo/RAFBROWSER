@@ -1,0 +1,27 @@
+name: RAFA-SCAN offline diagnostic gates
+on:
+  pull_request:
+    paths:
+      - 'tools/rafascan_network.sh'
+      - 'tests/test_rafascan_network.sh'
+      - 'docs/NETWORK_SECURITY_RAFA_SCAN_V1.md'
+      - '.github/workflows/rafascan-offline.yml'
+  push:
+    paths:
+      - 'tools/rafascan_network.sh'
+      - 'tests/test_rafascan_network.sh'
+      - '.github/workflows/rafascan-offline.yml'
+permissions:
+  contents: read
+jobs:
+  offline-no-network:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax + hermetic mock probes only
+        shell: bash
+        run: |
+          sh -n tools/rafascan_network.sh
+          sh -n tests/test_rafascan_network.sh
+          sh tests/test_rafascan_network.sh
