@@ -25,7 +25,7 @@ make test
 
 ## Additional freestanding paths
 
-- `settings/br_settings.h`: fixed-buffer configuration parser with bounded numeric values and rejection of duplicate or unknown keys.
+- `settings/br_settings.h`: fixed-buffer configuration parser with bounded numeric values and rejection of duplicate or unknown keys. An optional `browser.conf` controls `timeout_seconds`, `max_response_bytes`, and `interactive`.
 - `browser/br_resource.h`: MIME classification and explicit render/store/reject routing. Only HTML and plain text are rendered by the current browser.
 - `network/compact/br_frame.h`: bounded `RF` wire frame with sequence number, payload length, and CRC32C.
 - `network/binary/br_chunk.h`: ordered fixed-size binary transfer accounting with strict size limits.
@@ -33,6 +33,14 @@ make test
 - `LICENSE.md` is the executable license entrypoint: run `./build/browserraf --license` from the repository root. GPLv3 permits commercial use under its terms; this tree cannot retroactively require a contract from holders of existing GPL rights.
 
 These modules establish bounded protocol paths; they do not turn this text browser into a JavaScript/CSS/image-capable general browser.
+
+Example `browser.conf`:
+
+```ini
+timeout_seconds=3
+max_response_bytes=65535
+interactive=0
+```
 
 For a no-root Termux build/safety smoke:
 
