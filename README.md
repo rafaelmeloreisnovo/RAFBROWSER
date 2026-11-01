@@ -6,7 +6,7 @@ This repository currently has no source files or commit history available to ins
 
 ## Current source of implementation
 
-The existing browser implementation is maintained in [BrowserRaf](https://github.com/rafaelmeloreisnovo/BrowserRaf). Its current main commit on 2026-11-01 is `0ae70fb232fd2abf9e875790e4e488570e0581b4`; PR #8 integrated the header/test fixes and project route.
+The existing browser implementation is maintained in [BrowserRaf](https://github.com/rafaelmeloreisnovo/BrowserRaf). PR #8 was merged on 2026-11-01, integrating the header/test fixes and project route. Follow the linked BrowserRaf repository for its live HEAD.
 
 BrowserRaf is an experimental freestanding Linux/Android user-space HTTP/1.1 text browser. It deliberately rejects HTTPS because trusted TLS is not implemented. It is not a Chromium/WebView-class browser. See its [current entry route](https://github.com/rafaelmeloreisnovo/BrowserRaf/blob/main/START_HERE.md) and [dated state receipt](https://github.com/rafaelmeloreisnovo/BrowserRaf/blob/main/docs/CURRENT_STATE_2026-11-01.md).
 
