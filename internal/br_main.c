@@ -430,9 +430,6 @@ static const char DEFAULT_URL[]="http://example.com/";
 
 void browser_main(void){
     GR(); /* reset arena */
-    s32 cfg=BR_SETTINGS_LOAD("browser.conf",&_BR_SETTINGS);
-    if(cfg<0){PS("[ERRO] browser.conf invalido ou excessivo\n");EX();}
-    if(cfg==1)PS("[CONFIG] browser.conf ausente; usando padroes fixos\n");
 
     /* ASCII art logo */
     PS("\033[1;36m");
@@ -462,7 +459,7 @@ void browser_main(void){
     /* Bounded cmdline: reject unknown, duplicate and truncated options.
      * --connect-ip=IP pins an endpoint without contacting DNS. It does NOT
      * authenticate HTTP; HTTPS remains disabled before any network I/O. */
-    u8 interactive=_BR_SETTINGS.interactive,interactive_seen=0u,bad_option=0u;
+    u8 interactive_flag=0u,interactive_seen=0u,bad_option=0u;
     {u32 ci=0u;
      while(ci<511u&&_CMD[ci])ci++;
      if(ci>=511u)bad_option=1u;
@@ -485,7 +482,7 @@ void browser_main(void){
                  if(al==13u&&BR_MEMCMP(arg,"--interactive",13u)==0){
                      if(interactive_seen)bad_option=1u;
                      interactive_seen=1u;
-                     interactive=1u;
+                     interactive_flag=1u;
                  }else if(al>13u&&BR_MEMCMP(arg,"--connect-ip=",13u)==0){
                      if(_BR_FORCED_IP_SET||PARSE_IP(arg+13u,_BR_FORCED_IP)!=0)
                          bad_option=1u;
@@ -495,6 +492,10 @@ void browser_main(void){
              }
          }
      }}
+    s32 cfg=BR_SETTINGS_LOAD("browser.conf",&_BR_SETTINGS);
+    if(cfg<0){PS("[ERRO] browser.conf invalido ou excessivo\n");EX();}
+    if(cfg==1)PS("[CONFIG] browser.conf ausente; usando padroes fixos\n");
+    u8 interactive=(u8)(interactive_seen?interactive_flag:_BR_SETTINGS.interactive);
     if(bad_option||(_BR_FORCED_IP_SET&&interactive)){
         PS("[ERRO] opcao invalida ou --connect-ip com --interactive\n");
         EX();
